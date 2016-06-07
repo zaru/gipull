@@ -1,3 +1,5 @@
 #!/usr/bin/env ruby
 
 require "gipull"
+
+Gipull::CLI.start

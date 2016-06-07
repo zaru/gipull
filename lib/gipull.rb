@@ -1,5 +1,11 @@
 require "gipull/version"
+require "thor"
 
 module Gipull
-  # Your code goes here...
+  class CLI < Thor
+    desc "hello NAME", "say hello to NAME"
+    def hello(name)
+      puts "Hello #{name}"
+    end
+  end
 end

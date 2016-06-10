@@ -10,7 +10,6 @@ module Gipull
       output = ""
       @data.each do |r|
         r.each_with_index do |v,i|
-          # output += "%-#{@sizes[i] + 2}s" % v.to_s
           output += pad_to_print_size(v.to_s, @sizes[i] + 2)
         end
         output += "\n"

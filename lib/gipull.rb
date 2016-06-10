@@ -30,7 +30,13 @@ module Gipull
 
       client = Octokit::Client.new(:access_token => @config.access_token)
       client.auto_paginate = true
-      issues = client.org_issues options[:org], :filter => 'all', :state => 'open', :since => (Time.now - options[:since] * 86400).iso8601
+
+      orgs = (options[:org].include?(',')) ? options[:org].split(',') : [ options[:org] ]
+
+      issues = []
+      orgs.each do |org|
+        issues.concat client.org_issues org, :filter => 'all', :state => 'open', :since => (Time.now - options[:since] * 86400).iso8601
+      end
 
       prs = []
       issues.each do |issue|

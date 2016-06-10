@@ -2,6 +2,7 @@ require "gipull/version"
 require "gipull/config"
 require "gipull/formatter"
 require "thor"
+require "octokit"
 require "json"
 require "uri"
 
@@ -24,12 +25,12 @@ module Gipull
     def list(org)
       init unless @config.access_token
 
-      uri = URI.parse("https://api.github.com/orgs/#{org}/issues?access_token=#{@config.access_token}&state=open&filter=all")
-      json = Net::HTTP.get(uri)
-      result = JSON.parse(json)
+      client = Octokit::Client.new(:access_token => @config.access_token)
+      client.auto_paginate = true
+      issues = client.org_issues org, :filter => 'all', :state => 'open', :since => (Time.now - 3 * 86400).iso8601
 
       prs = []
-      result.each do |issue|
+      issues.each do |issue|
         next if issue['pull_request'].nil?
         row = [issue['title'], issue['html_url']]
         row << colored_message(issue['labels'].map{|l| l['name'] }.join(" ")) if issue['labels'].size > 0

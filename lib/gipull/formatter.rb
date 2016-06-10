@@ -26,7 +26,7 @@ module Gipull
     end
 
     def print_size(string)
-      string.each_char.map{|c| c.bytesize == 1 ? 1 : 2}.reduce(0, &:+)
+      string.each_char.map{|c| c.ascii_only? ? 1 : 2}.reduce(0, &:+)
     end
 
     def column_size

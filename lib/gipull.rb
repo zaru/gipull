@@ -31,8 +31,9 @@ module Gipull
       prs = []
       result.each do |issue|
         next if issue['pull_request'].nil?
-        labels = issue['labels'].map{|l| l['name'] }
-        prs << [issue['title'], issue['html_url'], colored_message(labels)]
+        row = [issue['title'], issue['html_url']]
+        row << colored_message(issue['labels'].map{|l| l['name'] }.join(" ")) if issue['labels'].size > 0
+        prs << row
       end
 
       formatter = Gipull::Formatter.new(prs)

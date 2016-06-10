@@ -22,8 +22,8 @@ module Gipull
     end
 
     desc "list ORG/REPO", "List pull-requests"
-    option :org, :required => true
-    option :repo
+    option :org, :type => :array, :required => true
+    option :repo, :type => :array, :default => []
     option :since, :type => :numeric, :default => 7
     def list
       init unless @config.access_token
@@ -31,16 +31,15 @@ module Gipull
       client = Octokit::Client.new(:access_token => @config.access_token)
       client.auto_paginate = true
 
-      orgs = (options[:org].include?(',')) ? options[:org].split(',') : [ options[:org] ]
-
       issues = []
-      orgs.each do |org|
+      options[:org].each do |org|
         issues.concat client.org_issues org, :filter => 'all', :state => 'open', :since => (Time.now - options[:since] * 86400).iso8601
       end
 
       prs = []
       issues.each do |issue|
         next if issue['pull_request'].nil?
+        next if options[:repo].size > 0 && !options[:repo].include?(issue['repository']['name'])
         row = [issue['title'], issue['html_url']]
         row << colored_message(issue['labels'].map{|l| l['name'] }.join(" ")) if issue['labels'].size > 0
         prs << row

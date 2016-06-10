@@ -22,12 +22,15 @@ module Gipull
     end
 
     desc "list ORG/REPO", "List pull-requests"
-    def list(org)
+    option :org, :required => true
+    option :repo
+    option :since, :type => :numeric, :default => 7
+    def list
       init unless @config.access_token
 
       client = Octokit::Client.new(:access_token => @config.access_token)
       client.auto_paginate = true
-      issues = client.org_issues org, :filter => 'all', :state => 'open', :since => (Time.now - 3 * 86400).iso8601
+      issues = client.org_issues options[:org], :filter => 'all', :state => 'open', :since => (Time.now - options[:since] * 86400).iso8601
 
       prs = []
       issues.each do |issue|

@@ -16,14 +16,10 @@ module Gipull
       @config = Gipull::Config.instance
     end
 
-    desc "hello NAME", "say hello to NAME"
-    def hello(name)
-      puts "Hello #{name} #{@config.data}"
-    end
-
-    desc "list ORG/REPO", "List pull-requests"
+    desc "list", "List pull-requests"
     option :org, :type => :array, :required => true
     option :repo, :type => :array, :default => []
+    option :excluderepo, :type => :array, :default => []
     option :since, :type => :numeric, :default => 7
     def list
       init unless @config.access_token
@@ -39,11 +35,14 @@ module Gipull
       prs = []
       issues.each do |issue|
         next if issue['pull_request'].nil?
-        next if options[:repo].size > 0 && !options[:repo].include?(issue['repository']['name'])
+        next unless options[:repo].empty? && !options[:repo].include?(issue['repository']['name'])
+        next unless options[:excluderepo].empty? && options[:excluderepo].include?(issue['repository']['name'])
         row = [issue['title'], issue['html_url']]
-        row << colored_message(issue['labels'].map{|l| l['name'] }.join(" ")) if issue['labels'].size > 0
+        row << colored_message(issue['labels'].map{|l| l['name'] }.join(" ")) unless issue['labels'].empty?
         prs << row
       end
+
+      return if prs.empty?
 
       formatter = Gipull::Formatter.new(prs)
       say formatter.render

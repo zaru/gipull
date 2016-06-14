@@ -35,8 +35,8 @@ module Gipull
       prs = []
       issues.each do |issue|
         next if issue['pull_request'].nil?
-        next unless options[:repo].empty? && !options[:repo].include?(issue['repository']['name'])
-        next unless options[:excluderepo].empty? && options[:excluderepo].include?(issue['repository']['name'])
+        next if !options[:repo].empty? && options[:repo].select{|r| issue['repository']['name'] =~ convert_regex(r) }.empty?
+        next if !options[:excluderepo].empty? && !options[:excluderepo].select{|r| issue['repository']['name'] =~ convert_regex(r) }.empty?
         row = [issue['title'], issue['html_url']]
         row << colored_message(issue['labels'].map{|l| l['name'] }.join(" ")) unless issue['labels'].empty?
         prs << row
@@ -62,6 +62,10 @@ module Gipull
     no_commands do
       def colored_message(message)
         set_color message, :white, :on_red, :bold
+      end
+
+      def convert_regex(str)
+        /\A#{str.gsub('*','.*')}\Z/
       end
     end
   end
